@@ -846,10 +846,11 @@ export default function Home() {
 >
   <a href="/privacy">プライバシーポリシー</a> |
   <a href="/disclaimer">免責事項</a> |
-  <a href="/contact">お問い合わせ</a>
+  <a href="/contact/contact">お問い合わせ</a>
 </div>
     </main>
   );
 }
+
 
 
