@@ -838,3 +838,14 @@ export default function Home() {
     </main>
   );
 }
+<div style={{
+  marginTop:40,
+  fontSize:13,
+  textAlign:"center",
+  color:"#666"
+}}>
+  <a href="/privacy">プライバシーポリシー</a> |
+  <a href="/disclaimer">免責事項</a> |
+  <a href="/contact">お問い合わせ</a>
+</div>
+
