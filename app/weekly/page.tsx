@@ -490,7 +490,7 @@ export default function WeeklyPage() {
       }}
     >
       <p style={{ fontWeight: 700, marginBottom: 10 }}>
-        🍳おすすめキッチングッズ
+        
       </p>
 
       <a
