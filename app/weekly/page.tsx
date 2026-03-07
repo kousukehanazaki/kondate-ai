@@ -480,6 +480,32 @@ export default function WeeklyPage() {
           </ul>
         </div>
       )}
+          {/* アフィリエイト */}
+    <div
+      style={{
+        marginTop: 40,
+        paddingTop: 20,
+        borderTop: "1px solid #eee",
+        textAlign: "center",
+      }}
+    >
+      <p style={{ fontWeight: 700, marginBottom: 10 }}>
+        🍳おすすめキッチングッズ
+      </p>
+
+      <a
+        href="https://hb.afl.rakuten.co.jp/hsc/519911ea.2ec3780d.519911eb.f3703e8d/?link_type=pict&ut=eyJwYWdlIjoic2hvcCIsInR5cGUiOiJwaWN0IiwiY29sIjoxLCJjYXQiOiI0NCIsImJhbiI6Mjc5NDg1OCwiYW1wIjp0cnVlfQ%3D%3D"
+        target="_blank"
+        rel="nofollow sponsored noopener"
+      >
+        <img
+          src="https://hbb.afl.rakuten.co.jp/hsb/519911ea.2ec3780d.519911eb.f3703e8d/?me_id=1&me_adv_id=2794858&t=pict"
+          alt="楽天広告"
+          width="468"
+          height="60"
+        />
+      </a>
+    </div>
     </main>
   );
 }
