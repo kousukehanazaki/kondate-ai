@@ -65,6 +65,7 @@ export default function WeeklyPage() {
   }, []);
 
   const shoppingList = useMemo(() => buildWeeklyShoppingList(plan), [plan]);
+  const selectedItem = selectedDay ? plan[selectedDay] : null;
 
   function clearDay(day: WeekDay) {
     const next = { ...plan, [day]: null };
@@ -78,8 +79,6 @@ export default function WeeklyPage() {
     saveWeeklyPlan(EMPTY_WEEKLY);
     setSelectedDay(null);
   }
-
-  const selectedItem = selectedDay ? plan[selectedDay] : null;
 
   return (
     <main style={{ maxWidth: 960, margin: "0 auto", padding: 20 }}>
@@ -110,6 +109,7 @@ export default function WeeklyPage() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12 }}>
         {(Object.keys(plan) as WeekDay[]).map((day) => {
           const item = plan[day];
+
           return (
             <div
               key={day}
@@ -120,7 +120,9 @@ export default function WeeklyPage() {
                 background: "#fff",
                 cursor: item ? "pointer" : "default",
               }}
-              onClick={() => item && setSelectedDay(day)}
+              onClick={() => {
+                if (item) setSelectedDay(day);
+              }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
                 <div>
@@ -231,6 +233,17 @@ export default function WeeklyPage() {
                   </li>
                 ))}
               </ol>
+            </div>
+          )}
+
+          {selectedItem.tips && selectedItem.tips.length > 0 && (
+            <div style={{ marginTop: 16 }}>
+              <h3>コツ</h3>
+              <ul style={{ paddingLeft: 18 }}>
+                {selectedItem.tips.map((x, i) => (
+                  <li key={i}>{x}</li>
+                ))}
+              </ul>
             </div>
           )}
         </div>
