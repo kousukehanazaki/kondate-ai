@@ -13,35 +13,36 @@ type Item = {
   steps?: string[];
   tips?: string[];
 };
-    type WeekDay = "月" | "火" | "水" | "木" | "金" | "土" | "日";
-    type WeeklyPlan = Record<WeekDay, Item | null>;
 
-    const LS_WEEKLY = "kondate_ai_weekly_v1";
+type WeekDay = "月" | "火" | "水" | "木" | "金" | "土" | "日";
+type WeeklyPlan = Record<WeekDay, Item | null>;
 
-    const EMPTY_WEEKLY: WeeklyPlan = {
-    月: null,
-    火: null,
-    水: null,
-    木: null,
-    金: null,
-    土: null,
-    日: null,
-    };
+const LS_WEEKLY = "kondate_ai_weekly_v1";
 
-    function loadWeeklyPlan(): WeeklyPlan {
-    if (typeof window === "undefined") return EMPTY_WEEKLY;
-    try {
-        const raw = localStorage.getItem(LS_WEEKLY);
-        if (!raw) return EMPTY_WEEKLY;
-        return { ...EMPTY_WEEKLY, ...JSON.parse(raw) };
-    } catch {
-        return EMPTY_WEEKLY;
-    }
-    }
+const EMPTY_WEEKLY: WeeklyPlan = {
+  月: null,
+  火: null,
+  水: null,
+  木: null,
+  金: null,
+  土: null,
+  日: null,
+};
 
-    function saveWeeklyPlan(plan: WeeklyPlan) {
-    if (typeof window === "undefined") return;
-    localStorage.setItem(LS_WEEKLY, JSON.stringify(plan));
+function loadWeeklyPlan(): WeeklyPlan {
+  if (typeof window === "undefined") return EMPTY_WEEKLY;
+  try {
+    const raw = localStorage.getItem(LS_WEEKLY);
+    if (!raw) return EMPTY_WEEKLY;
+    return { ...EMPTY_WEEKLY, ...JSON.parse(raw) };
+  } catch {
+    return EMPTY_WEEKLY;
+  }
+}
+
+function saveWeeklyPlan(plan: WeeklyPlan) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(LS_WEEKLY, JSON.stringify(plan));
 }
 
 function buildShoppingList(it: Item): string[] {
@@ -59,7 +60,9 @@ export default function FreePage() {
   const [items, setItems] = useState<Item[]>([]);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [shoppingOpen, setShoppingOpen] = useState<Record<number, boolean>>({});
-  const [checks, setChecks] = useState<Record<number, Record<string, boolean>>>({});
+  const [checks, setChecks] = useState<Record<number, Record<string, boolean>>>(
+    {}
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -79,6 +82,7 @@ export default function FreePage() {
       });
 
       const data = await res.json();
+
       if (!res.ok) throw new Error(data?.error || "生成に失敗しました");
       if (!data?.items || !Array.isArray(data.items)) {
         throw new Error("返ってきた形式が想定と違います");
@@ -94,14 +98,24 @@ export default function FreePage() {
 
   return (
     <main style={{ maxWidth: 900, margin: "0 auto", padding: 20 }}>
-      <h1>自由入力レシピAI</h1>
-      <p style={{ color: "#666" }}>
-        例：「鶏肉とキャベツで夜ごはん」「冷蔵庫の卵と豆腐で簡単レシピ」など自由に入力できます。
+      <h1 style={{ fontSize: 26, fontWeight: 900 }}>自由入力レシピAI</h1>
+      <p style={{ color: "#666", lineHeight: 1.6 }}>
+        例：「鶏肉とキャベツで夜ごはん」「冷蔵庫の卵と豆腐で簡単レシピ」など、
+        好きな条件を自由に入力できます。
       </p>
 
-      <a href="/" style={{ display: "inline-block", marginBottom: 16 }}>
-        ← トップに戻る
-      </a>
+      <div style={{ marginBottom: 16 }}>
+        <a href="/" style={{ textDecoration: "none", color: "#111", fontWeight: 700 }}>
+          ← トップに戻る
+        </a>
+        <span style={{ margin: "0 8px", color: "#999" }}>|</span>
+        <a
+          href="/weekly"
+          style={{ textDecoration: "none", color: "#111", fontWeight: 700 }}
+        >
+          📅 1週間献立を見る
+        </a>
+      </div>
 
       <div
         style={{
@@ -109,6 +123,7 @@ export default function FreePage() {
           borderRadius: 16,
           padding: 16,
           background: "#fff",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
         }}
       >
         <textarea
@@ -123,6 +138,7 @@ export default function FreePage() {
             border: "1px solid #ddd",
             resize: "vertical",
             fontSize: 14,
+            lineHeight: 1.5,
           }}
         />
 
@@ -137,7 +153,7 @@ export default function FreePage() {
             background: "#111",
             color: "#fff",
             fontWeight: 900,
-            cursor: "pointer",
+            cursor: loading || !prompt.trim() ? "not-allowed" : "pointer",
             width: "100%",
           }}
         >
@@ -145,7 +161,16 @@ export default function FreePage() {
         </button>
 
         {error && (
-          <div style={{ marginTop: 12, color: "#a40000" }}>
+          <div
+            style={{
+              marginTop: 12,
+              color: "#a40000",
+              background: "#fff5f5",
+              border: "1px solid #ffcccc",
+              borderRadius: 12,
+              padding: 12,
+            }}
+          >
             エラー：{error}
           </div>
         )}
@@ -169,18 +194,38 @@ export default function FreePage() {
                     padding: 14,
                     background: "#fff",
                     cursor: "pointer",
+                    boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
                   }}
                 >
-                  <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      gap: 12,
+                    }}
+                  >
                     <div>
                       <div style={{ fontWeight: 900, fontSize: 16 }}>{it.title}</div>
-                      <div style={{ color: "#666", marginTop: 6 }}>{it.summary}</div>
+                      <div style={{ color: "#666", marginTop: 6, lineHeight: 1.5 }}>
+                        {it.summary}
+                      </div>
                     </div>
 
                     <div style={{ textAlign: "right", whiteSpace: "nowrap" }}>
                       <div>⏱ {it.timeMin}分</div>
                       <div>🔥 {it.caloriesKcal}kcal</div>
                     </div>
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop: 10,
+                      fontSize: 12,
+                      color: "#666",
+                      fontWeight: 800,
+                    }}
+                  >
+                    {open ? "▲ たたむ" : "▼ 詳細を見る"}
                   </div>
                 </div>
 
@@ -195,13 +240,28 @@ export default function FreePage() {
                     }}
                   >
                     <h3 style={{ marginTop: 0 }}>{it.title}</h3>
-                    <p style={{ color: "#666" }}>{it.summary}</p>
+                    <p style={{ color: "#666", lineHeight: 1.6 }}>{it.summary}</p>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 10,
+                        flexWrap: "wrap",
+                        marginTop: 10,
+                      }}
+                    >
+                      <span>⏱ {it.timeMin}分</span>
+                      <span>🔥 {it.caloriesKcal}kcal</span>
+                      {it.servings && <span>👤 {it.servings}</span>}
+                    </div>
 
                     <div style={{ marginTop: 14 }}>
                       <h4>材料</h4>
                       <ul style={{ paddingLeft: 18 }}>
                         {(it.ingredients || []).map((x, i) => (
-                          <li key={i}>{x}</li>
+                          <li key={i} style={{ marginBottom: 6 }}>
+                            {x}
+                          </li>
                         ))}
                       </ul>
                     </div>
@@ -211,7 +271,9 @@ export default function FreePage() {
                         <h4>調味料</h4>
                         <ul style={{ paddingLeft: 18 }}>
                           {it.seasonings.map((x, i) => (
-                            <li key={i}>{x}</li>
+                            <li key={i} style={{ marginBottom: 6 }}>
+                              {x}
+                            </li>
                           ))}
                         </ul>
                       </div>
@@ -229,6 +291,53 @@ export default function FreePage() {
                         </ol>
                       </div>
                     )}
+
+                    {it.tips && it.tips.length > 0 && (
+                      <div style={{ marginTop: 14 }}>
+                        <h4>コツ</h4>
+                        <ul style={{ paddingLeft: 18 }}>
+                          {it.tips.map((x, i) => (
+                            <li key={i} style={{ marginBottom: 6 }}>
+                              {x}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    <div style={{ marginTop: 14 }}>
+                      <select
+                        defaultValue=""
+                        onChange={(e) => {
+                          const day = e.target.value as WeekDay;
+                          if (!day) return;
+
+                          const current = loadWeeklyPlan();
+                          const next = { ...current, [day]: it };
+                          saveWeeklyPlan(next);
+
+                          alert(`${day}曜日に保存しました`);
+                          e.target.value = "";
+                        }}
+                        style={{
+                          padding: "12px 14px",
+                          borderRadius: 12,
+                          border: "1px solid #ddd",
+                          background: "#fff",
+                          cursor: "pointer",
+                          fontWeight: 900,
+                        }}
+                      >
+                        <option value="">1週間献立に保存</option>
+                        <option value="月">月曜日に保存</option>
+                        <option value="火">火曜日に保存</option>
+                        <option value="水">水曜日に保存</option>
+                        <option value="木">木曜日に保存</option>
+                        <option value="金">金曜日に保存</option>
+                        <option value="土">土曜日に保存</option>
+                        <option value="日">日曜日に保存</option>
+                      </select>
+                    </div>
 
                     <div style={{ marginTop: 14 }}>
                       <button
@@ -265,7 +374,9 @@ export default function FreePage() {
                                   padding: 10,
                                   borderRadius: 12,
                                   border: "1px solid #ddd",
-                                  background: checked ? "rgba(17,17,17,0.06)" : "#fff",
+                                  background: checked
+                                    ? "rgba(17,17,17,0.06)"
+                                    : "#fff",
                                   cursor: "pointer",
                                 }}
                               >
