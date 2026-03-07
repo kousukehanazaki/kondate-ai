@@ -20,7 +20,7 @@ type WeeklyPlan = Record<WeekDay, Item | null>;
 type ChecklistMap = Record<string, boolean>;
 
 const LS_WEEKLY = "kondate_ai_weekly_v1";
-const LS_WEEKLY_CHECK_PREFIX = "kondate_ai_weekly_checklist_v1__";
+const LS_WEEKLY_CHECK_PREFIX = "kondate_ai_weekly_checklist_v2__";
 
 const EMPTY_WEEKLY: WeeklyPlan = {
   月: null,
@@ -95,6 +95,8 @@ function buildWeeklyShoppingList(plan: WeeklyPlan): string[] {
 export default function WeeklyPage() {
   const [plan, setPlan] = useState<WeeklyPlan>(EMPTY_WEEKLY);
   const [expandedDay, setExpandedDay] = useState<WeekDay | null>(null);
+
+  // 買い物リストは「詳細内のボタンを押した時だけ」開く
   const [shoppingOpen, setShoppingOpen] = useState<Record<WeekDay, boolean>>({
     月: false,
     火: false,
@@ -104,6 +106,7 @@ export default function WeeklyPage() {
     土: false,
     日: false,
   });
+
   const [checklists, setChecklists] = useState<Record<WeekDay, ChecklistMap>>({
     月: {},
     火: {},
@@ -134,8 +137,10 @@ export default function WeeklyPage() {
     setPlan(next);
     saveWeeklyPlan(next);
     clearChecklist(day);
+
     setChecklists((prev) => ({ ...prev, [day]: {} }));
     setShoppingOpen((prev) => ({ ...prev, [day]: false }));
+
     if (expandedDay === day) setExpandedDay(null);
   }
 
@@ -143,9 +148,9 @@ export default function WeeklyPage() {
     setPlan(EMPTY_WEEKLY);
     saveWeeklyPlan(EMPTY_WEEKLY);
 
-    (["月", "火", "水", "木", "金", "土", "日"] as WeekDay[]).forEach((day) =>
-      clearChecklist(day)
-    );
+    (["月", "火", "水", "木", "金", "土", "日"] as WeekDay[]).forEach((day) => {
+      clearChecklist(day);
+    });
 
     setChecklists({
       月: {},
@@ -156,6 +161,7 @@ export default function WeeklyPage() {
       土: {},
       日: {},
     });
+
     setShoppingOpen({
       月: false,
       火: false,
@@ -165,6 +171,7 @@ export default function WeeklyPage() {
       土: false,
       日: false,
     });
+
     setExpandedDay(null);
   }
 
@@ -193,7 +200,7 @@ export default function WeeklyPage() {
   return (
     <main style={{ maxWidth: 960, margin: "0 auto", padding: 20 }}>
       <h1 style={{ fontSize: 26, fontWeight: 900 }}>1週間献立</h1>
-      <p style={{ color: "#666" }}>
+      <p style={{ color: "#666", lineHeight: 1.6 }}>
         ホーム画面や自由レシピで保存した献立を、1週間分まとめて確認できます。
       </p>
 
@@ -216,16 +223,18 @@ export default function WeeklyPage() {
         </button>
       </div>
 
+      {/* 曜日ごとの献立カード */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12 }}>
         {(["月", "火", "水", "木", "金", "土", "日"] as WeekDay[]).map((day) => {
           const item = plan[day];
           const open = expandedDay === day;
-          const shoppingVisible = !!shoppingOpen[day];
-          const shoppingList = item ? buildShoppingList(item) : [];
+          const shoppingVisible = shoppingOpen[day];
           const checklist = checklists[day] || {};
+          const shoppingList = item ? buildShoppingList(item) : [];
 
           return (
             <div key={day}>
+              {/* カード */}
               <div
                 style={{
                   border: "1px solid #e5e5e5",
@@ -235,12 +244,27 @@ export default function WeeklyPage() {
                   cursor: item ? "pointer" : "default",
                 }}
                 onClick={() => {
-                  if (item) setExpandedDay((prev) => (prev === day ? null : day));
+                  if (!item) return;
+
+                  setExpandedDay((prev) => {
+                    const next = prev === day ? null : day;
+
+                    // 詳細を閉じる時は買い物リストも閉じる
+                    if (prev === day) {
+                      setShoppingOpen((prevOpen) => ({
+                        ...prevOpen,
+                        [day]: false,
+                      }));
+                    }
+
+                    return next;
+                  });
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
                   <div>
                     <div style={{ fontWeight: 900, fontSize: 18 }}>{day}曜日</div>
+
                     {item ? (
                       <>
                         <div style={{ marginTop: 6, fontWeight: 700 }}>{item.title}</div>
@@ -275,6 +299,7 @@ export default function WeeklyPage() {
                 </div>
               </div>
 
+              {/* 詳細はカードを押した時だけ出る */}
               {item && open && (
                 <div
                   style={{
@@ -347,6 +372,7 @@ export default function WeeklyPage() {
                     </div>
                   )}
 
+                  {/* 買い物リストはここでボタンを押した時だけ */}
                   <div style={{ marginTop: 16, display: "flex", gap: 10, flexWrap: "wrap" }}>
                     <button
                       type="button"
@@ -387,35 +413,42 @@ export default function WeeklyPage() {
                     )}
                   </div>
 
+                  {/* チェックできる買い物リスト */}
                   {shoppingVisible && (
                     <div style={{ marginTop: 16 }}>
                       <h3>買い物リスト</h3>
                       <div style={{ display: "grid", gap: 8 }}>
-                        {shoppingList.map((label) => {
-                          const checked = !!checklist[label];
-                          return (
-                            <label
-                              key={label}
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 10,
-                                padding: 10,
-                                borderRadius: 12,
-                                border: "1px solid #ddd",
-                                background: checked ? "rgba(17,17,17,0.06)" : "#fff",
-                                cursor: "pointer",
-                              }}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={checked}
-                                onChange={(e) => toggleChecklist(day, label, e.target.checked)}
-                              />
-                              <span>{label}</span>
-                            </label>
-                          );
-                        })}
+                        {shoppingList.length === 0 ? (
+                          <div style={{ color: "#666" }}>材料情報がありません</div>
+                        ) : (
+                          shoppingList.map((label) => {
+                            const checked = !!checklist[label];
+                            return (
+                              <label
+                                key={label}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 10,
+                                  padding: 10,
+                                  borderRadius: 12,
+                                  border: "1px solid #ddd",
+                                  background: checked ? "rgba(17,17,17,0.06)" : "#fff",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={(e) =>
+                                    toggleChecklist(day, label, e.target.checked)
+                                  }
+                                />
+                                <span>{label}</span>
+                              </label>
+                            );
+                          })
+                        )}
                       </div>
                     </div>
                   )}
@@ -426,6 +459,7 @@ export default function WeeklyPage() {
         })}
       </div>
 
+      {/* 週全体の買い物リストはそのまま残す */}
       {weeklyShoppingList.length > 0 && (
         <div
           style={{
@@ -436,7 +470,7 @@ export default function WeeklyPage() {
             background: "#fafafa",
           }}
         >
-          <h2 style={{ marginTop: 0 }}>🛒 1週間の買い物リスト</h2>
+          <h2 style={{ marginTop: 0 }}>🛒 1週間の買い物リスト（全体）</h2>
           <ul style={{ paddingLeft: 18 }}>
             {weeklyShoppingList.map((x, i) => (
               <li key={i} style={{ marginBottom: 6 }}>
