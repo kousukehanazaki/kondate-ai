@@ -20,6 +20,35 @@ type Item = {
 type ChecklistMap = Record<string, boolean>;
 
 const LS_FAV = "kondate_ai_favorites_v2";
+const LS_WEEKLY = "kondate_ai_weekly_v1";
+type WeekDay = "月" | "火" | "水" | "木" | "金" | "土" | "日";
+type WeeklyPlan = Record<WeekDay, Item | null>;
+
+const EMPTY_WEEKLY: WeeklyPlan = {
+  月: null,
+  火: null,
+  水: null,
+  木: null,
+  金: null,
+  土: null,
+  日: null,
+};
+
+function loadWeeklyPlan(): WeeklyPlan {
+  if (typeof window === "undefined") return EMPTY_WEEKLY;
+  try {
+    const raw = localStorage.getItem(LS_WEEKLY);
+    if (!raw) return EMPTY_WEEKLY;
+    return { ...EMPTY_WEEKLY, ...JSON.parse(raw) };
+  } catch {
+    return EMPTY_WEEKLY;
+  }
+}
+
+function saveWeeklyPlan(plan: WeeklyPlan) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(LS_WEEKLY, JSON.stringify(plan));
+}
 const LS_CHECK_PREFIX = "kondate_ai_checklist_v2__"; // + itemKey
 
 function itemKey(it: Item) {
@@ -358,6 +387,30 @@ export default function Home() {
 
           {/* 買い物リスト：欲しい時だけトリガー */}
           <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
+                {(["月", "火", "水", "木", "金", "土", "日"] as WeekDay[]).map((day) => (
+                    <button
+                    key={day}
+                    type="button"
+                    onClick={() => {
+                        const current = loadWeeklyPlan();
+                        const next = { ...current, [day]: it };
+                        saveWeeklyPlan(next);
+                        alert(`${day}曜日に保存しました`);
+                    }}
+                    style={{
+                        padding: "10px 12px",
+                        borderRadius: 14,
+                        border: "1px solid rgba(0,0,0,0.12)",
+                        background: "#fff",
+                        cursor: "pointer",
+                        fontWeight: 900,
+                    }}
+                    >
+                    {day}に保存
+                    </button>
+                ))}
+                </div>
             <button
               type="button"
               onClick={() => {
@@ -484,6 +537,23 @@ export default function Home() {
           条件を選んで、5つの献立をサクッと提案します 🍳
         </p>
       </header>
+            <div style={{ marginTop: 10 }}>
+        <a
+            href="/weekly"
+            style={{
+            display: "inline-block",
+            padding: "8px 12px",
+            borderRadius: 999,
+            border: "1px solid rgba(0,0,0,0.12)",
+            textDecoration: "none",
+            color: "#111",
+            fontWeight: 800,
+            background: "#fff",
+            }}
+        >
+            📅 1週間献立を見る
+        </a>
+        </div>
 
       {/* お気に入り */}
       {favorites.length > 0 && (
@@ -742,6 +812,7 @@ export default function Home() {
 
                   {/* 詳細：カードの直下 */}
                   {expanded && <DetailBlock it={it} />}
+                  
                 </div>
               );
             })}
@@ -848,6 +919,33 @@ export default function Home() {
   <a href="/disclaimer">免責事項</a> |
   <a href="/contact/contact">お問い合わせ</a>
 </div>
+<a
+  href="/free"
+  style={{
+    position: "fixed",
+    right: 20,
+    bottom: 20,
+    width: 64,
+    height: 64,
+    borderRadius: "50%",
+    background: "#111",
+    color: "#fff",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    textDecoration: "none",
+    fontWeight: 900,
+    boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+    zIndex: 999,
+    fontSize: 12,
+    textAlign: "center",
+    lineHeight: 1.3,
+  }}
+>
+  自由
+  <br />
+  レシピ
+</a>
     </main>
   );
 }
