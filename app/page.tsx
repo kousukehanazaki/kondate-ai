@@ -388,28 +388,37 @@ export default function Home() {
           {/* 買い物リスト：欲しい時だけトリガー */}
           <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
-                {(["月", "火", "水", "木", "金", "土", "日"] as WeekDay[]).map((day) => (
-                    <button
-                    key={day}
-                    type="button"
-                    onClick={() => {
-                        const current = loadWeeklyPlan();
-                        const next = { ...current, [day]: it };
-                        saveWeeklyPlan(next);
-                        alert(`${day}曜日に保存しました`);
+                <select
+                    defaultValue=""
+                    onChange={(e) => {
+                      const day = e.target.value as WeekDay;
+                      if (!day) return;
+
+                      const current = loadWeeklyPlan();
+                      const next = { ...current, [day]: it };
+                      saveWeeklyPlan(next);
+
+                      alert(`${day}曜日に保存しました`);
+                      e.target.value = "";
                     }}
                     style={{
-                        padding: "10px 12px",
-                        borderRadius: 14,
-                        border: "1px solid rgba(0,0,0,0.12)",
-                        background: "#fff",
-                        cursor: "pointer",
-                        fontWeight: 900,
+                      padding: "12px 14px",
+                      borderRadius: 14,
+                      border: "1px solid rgba(0,0,0,0.12)",
+                      background: "#fff",
+                      cursor: "pointer",
+                      fontWeight: 900,
                     }}
-                    >
-                    {day}に保存
-                    </button>
-                ))}
+                  >
+                    <option value="">1週間献立に保存</option>
+                    <option value="月">月曜日に保存</option>
+                    <option value="火">火曜日に保存</option>
+                    <option value="水">水曜日に保存</option>
+                    <option value="木">木曜日に保存</option>
+                    <option value="金">金曜日に保存</option>
+                    <option value="土">土曜日に保存</option>
+                    <option value="日">日曜日に保存</option>
+                  </select>
                 </div>
             <button
               type="button"

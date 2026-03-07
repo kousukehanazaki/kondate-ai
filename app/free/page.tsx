@@ -13,6 +13,36 @@ type Item = {
   steps?: string[];
   tips?: string[];
 };
+    type WeekDay = "月" | "火" | "水" | "木" | "金" | "土" | "日";
+    type WeeklyPlan = Record<WeekDay, Item | null>;
+
+    const LS_WEEKLY = "kondate_ai_weekly_v1";
+
+    const EMPTY_WEEKLY: WeeklyPlan = {
+    月: null,
+    火: null,
+    水: null,
+    木: null,
+    金: null,
+    土: null,
+    日: null,
+    };
+
+    function loadWeeklyPlan(): WeeklyPlan {
+    if (typeof window === "undefined") return EMPTY_WEEKLY;
+    try {
+        const raw = localStorage.getItem(LS_WEEKLY);
+        if (!raw) return EMPTY_WEEKLY;
+        return { ...EMPTY_WEEKLY, ...JSON.parse(raw) };
+    } catch {
+        return EMPTY_WEEKLY;
+    }
+    }
+
+    function saveWeeklyPlan(plan: WeeklyPlan) {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(LS_WEEKLY, JSON.stringify(plan));
+}
 
 function buildShoppingList(it: Item): string[] {
   const a = Array.isArray(it.ingredients) ? it.ingredients : [];
